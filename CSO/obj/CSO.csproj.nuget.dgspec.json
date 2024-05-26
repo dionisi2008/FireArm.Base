@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "c:\\Users\\Denis\\FireArm.Base\\CSO\\CSO.csproj": {}
+    "C:\\Users\\Denis\\FireArm.Base\\CSO\\CSO.csproj": {}
   },
   "projects": {
-    "c:\\Users\\Denis\\FireArm.Base\\CSO\\CSO.csproj": {
+    "C:\\Users\\Denis\\FireArm.Base\\CSO\\CSO.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "c:\\Users\\Denis\\FireArm.Base\\CSO\\CSO.csproj",
+        "projectUniqueName": "C:\\Users\\Denis\\FireArm.Base\\CSO\\CSO.csproj",
         "projectName": "CSO",
-        "projectPath": "c:\\Users\\Denis\\FireArm.Base\\CSO\\CSO.csproj",
+        "projectPath": "C:\\Users\\Denis\\FireArm.Base\\CSO\\CSO.csproj",
         "packagesPath": "C:\\Users\\Denis\\.nuget\\packages\\",
-        "outputPath": "c:\\Users\\Denis\\FireArm.Base\\CSO\\obj\\",
+        "outputPath": "C:\\Users\\Denis\\FireArm.Base\\CSO\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\Denis\\AppData\\Roaming\\NuGet\\NuGet.Config"
