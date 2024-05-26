@@ -289,6 +289,23 @@ namespace CSO
             }
             return sb;
         }
+        public async static void ReadCommand(string GetCommand)
+        {
+            string[] DataWork = GetCommand.Split('\n');
+            switch (DataWork[0])
+            {
+                case "GET":
+                    break;
+                case "SET":
+                    break;
+                case "UPDATE":
+                    break;
+                case "DEL":
+                    break;
+            }
+
+            
+        }
     }
 }
 
