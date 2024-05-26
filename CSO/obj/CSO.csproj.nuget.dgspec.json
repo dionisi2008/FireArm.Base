@@ -1,31 +1,25 @@
 {
   "format": 1,
   "restore": {
-    "c:\\Users\\Денис\\CSO\\CSO\\CSO.csproj": {}
+    "c:\\Users\\Denis\\FireArm.Base\\CSO\\CSO.csproj": {}
   },
   "projects": {
-    "c:\\Users\\Денис\\CSO\\CSO\\CSO.csproj": {
+    "c:\\Users\\Denis\\FireArm.Base\\CSO\\CSO.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "c:\\Users\\Денис\\CSO\\CSO\\CSO.csproj",
+        "projectUniqueName": "c:\\Users\\Denis\\FireArm.Base\\CSO\\CSO.csproj",
         "projectName": "CSO",
-        "projectPath": "c:\\Users\\Денис\\CSO\\CSO\\CSO.csproj",
-        "packagesPath": "C:\\Users\\Денис\\.nuget\\packages\\",
-        "outputPath": "c:\\Users\\Денис\\CSO\\CSO\\obj\\",
+        "projectPath": "c:\\Users\\Denis\\FireArm.Base\\CSO\\CSO.csproj",
+        "packagesPath": "C:\\Users\\Denis\\.nuget\\packages\\",
+        "outputPath": "c:\\Users\\Denis\\FireArm.Base\\CSO\\obj\\",
         "projectStyle": "PackageReference",
-        "fallbackFolders": [
-          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
-        ],
         "configFilePaths": [
-          "C:\\Users\\Денис\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+          "C:\\Users\\Denis\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net8.0"
         ],
         "sources": {
-          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -64,7 +58,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.300/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.205/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

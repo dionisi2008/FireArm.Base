@@ -77,9 +77,11 @@ namespace CSO
                     switch (headerStringGet.Type)
                     {
                         case "User":
+
                             Users.Add(JsonSerializer.Deserialize<User>(Encoding.UTF8.GetString(dataBuffer)));
                             break;
                         case "UserGroup":
+
                             UserGroups.Add(JsonSerializer.Deserialize<UserGroup>(Encoding.UTF8.GetString(dataBuffer)));
                             break;
                         case "Session":
@@ -146,9 +148,9 @@ namespace CSO
                     int userPosition = GetNextFreePosition(userDataBytes.Length);
                     // PositionDictionary.Add(user.Id, userPosition);
 
-                    string userHeader = $"{typeof(User).Name} {user.Id} {userPosition} {userDataBytes.Length} {" "}";
-                    string[] sdsdsd = 
-                    Console.WriteLine("test: " + typeof(User).Name[..-1].ToString());
+                    string userHeader = $"{typeof(User).Name} {user.Id} {userPosition} {userDataBytes.Length}" + ' ';
+                    System.Console.WriteLine(userHeader);
+
                     HeaderNames.Add(userHeader);
 
                     FileStream.Position = userPosition;
@@ -165,7 +167,8 @@ namespace CSO
                     int userGroupPosition = GetNextFreePosition(userGroupDataBytes.Length);
                     // PositionDictionary.Add(userGroup.Id, userGroupPosition);
 
-                    string groupHeader = $"{typeof(UserGroup).Name} {userGroup.Id} {userGroupPosition} {userGroupDataBytes.Length}{" "}";
+                    string groupHeader = $"{typeof(UserGroup).Name} {userGroup.Id} {userGroupPosition} {userGroupDataBytes.Length}" + ' ';
+
                     HeaderNames.Add(groupHeader);
 
                     FileStream.Position = userGroupPosition;
@@ -181,7 +184,7 @@ namespace CSO
                     int sessionPosition = GetNextFreePosition(sessionDataBytes.Length);
                     // PositionDictionary.Add(session.Id, sessionPosition);
 
-                    string sessionHeader = $"{typeof(Session).Name} {session.Id} {sessionPosition} {sessionDataBytes.Length}{" "}";
+                    string sessionHeader = $"{typeof(Session).Name} {session.Id} {sessionPosition} {sessionDataBytes.Length}" + ' ';
                     HeaderNames.Add(sessionHeader);
 
                     FileStream.Position = sessionPosition;
@@ -197,7 +200,7 @@ namespace CSO
                     int actionHistoryPosition = GetNextFreePosition(actionHistoryDataBytes.Length);
                     // PositionDictionary.Add(actionHistory.Id, actionHistoryPosition);
 
-                    string actionHistoryHeader = $"{typeof(ActionHistory).Name} {actionHistory.Id} {actionHistoryPosition} {actionHistoryDataBytes.Length}{" "}";
+                    string actionHistoryHeader = $"{typeof(ActionHistory).Name} {actionHistory.Id} {actionHistoryPosition} {actionHistoryDataBytes.Length}" + ' ';
                     HeaderNames.Add(actionHistoryHeader);
 
                     FileStream.Position = actionHistoryPosition;
@@ -213,7 +216,7 @@ namespace CSO
                     int deviceConnectionPosition = GetNextFreePosition(deviceConnectionDataBytes.Length);
                     // PositionDictionary.Add(deviceConnection.Name, deviceConnectionPosition);
 
-                    string deviceConnectionHeader = $"{typeof(DeviceConnection).Name} {deviceConnection.Name} {deviceConnectionPosition} {deviceConnectionDataBytes.Length}{" "}";
+                    string deviceConnectionHeader = $"{typeof(DeviceConnection).Name} {deviceConnection.Name} {deviceConnectionPosition} {deviceConnectionDataBytes.Length}" + ' ';
                     HeaderNames.Add(deviceConnectionHeader);
 
                     FileStream.Position = deviceConnectionPosition;
@@ -229,7 +232,7 @@ namespace CSO
                     int workPlacePosition = GetNextFreePosition(workPlaceDataBytes.Length);
                     // PositionDictionary.Add(workPlace.Id, workPlacePosition);
 
-                    string workPlaceHeader = $"{typeof(WorkPlace).Name} {workPlace.Id} {workPlacePosition} {workPlaceDataBytes.Length}{" "}";
+                    string workPlaceHeader = $"{typeof(WorkPlace).Name} {workPlace.Id} {workPlacePosition} {workPlaceDataBytes.Length}" + ' ';
                     HeaderNames.Add(workPlaceHeader);
 
                     FileStream.Position = workPlacePosition;
@@ -264,155 +267,164 @@ namespace CSO
         public static string GenerateUniqueId()
         {
             const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-            StringBuilder sb = new StringBuilder(16);
-            Random random = new Random();
-
-            for (int shag = 0; shag <= HeaderNames.Count - 1; shag++)
+            string sb = "";
+            Random random = new Random(DateTime.Now.Microsecond);
+            for (int i = 0; i < 16; i++)
             {
-                sb.Clear();
-
-                for (int i = 0; i < 16; i++)
+                sb = sb + chars[random.Next(chars.Length)];
+            }
+            if (HeaderNames.Count >= 1)
+            {
+                for (int shag = 0; shag <= HeaderNames.Count - 1; shag++)
                 {
-                    do
+                    if (new HeaderString(HeaderNames[shag]).Id == sb)
                     {
-                        sb.Append(chars[random.Next(chars.Length)]);
-                    } while (new HeaderString(HeaderNames[shag]).Id == sb.ToString());
+                        sb = "";
+                        for (int i = 0; i < 16; i++)
+                        {
+                            sb = sb + chars[random.Next(chars.Length)];
+                        }
+                    }
                 }
             }
-            return sb.ToString();
+            return sb;
         }
     }
+}
 
-    public class HeaderString
+public class HeaderString
+{
+    public string Type { get; set; }
+    public string Id { get; set; }
+    public int startindex { get; set; }
+    public int Size { get; set; }
+    public HeaderString(string GetString)
     {
-        public string Type { get; set; }
-        public string Id { get; set; }
-        public int startindex { get; set; }
-        public int Size { get; set; }
-        public HeaderString(string GetString)
-        {
-            string[] ReadData = GetString.Split(' ');
-            Type = ReadData[0];
-            Id = ReadData[1];
-            startindex = int.Parse(ReadData[2]);
-            Size = int.Parse(ReadData[3]);
-        }
-
-        public int GetSizeAndPosition()
-        {
-            return startindex + Size;
-        }
-
+        string[] ReadData = GetString.Split(' ');
+        Type = ReadData[0];
+        Id = ReadData[1];
+        startindex = int.Parse(ReadData[2]);
+        Size = int.Parse(ReadData[3]);
     }
 
-    // Класс пользователя
-    public class User
+    public int GetSizeAndPosition()
     {
-        public string Id { get; set; }
-        public string Login { get; set; }
-        public string PasswordHash { get; set; }
-        public string Name { get; set; }
-        public string Role { get; set; }
-
-        public User(string id, string login, string passwordHash, string name, string role)
-        {
-            Id = id;
-            Login = login;
-            PasswordHash = passwordHash;
-            Name = name;
-            Role = role;
-        }
+        return startindex + Size;
     }
 
-    // Класс группы пользователей
-    public class UserGroup
+}
+
+// Класс пользователя
+public class User
+{
+    public string Id { get; set; }
+    public string Login { get; set; }
+    public string PasswordHash { get; set; }
+    public string Name { get; set; }
+    public string Role { get; set; }
+
+    public User(string id, string login, string passwordHash, string name, string role)
     {
-        public string Id { get; set; }
-        public string Name { get; set; }
-        public List<string> UserIds { get; set; } // Коллекция идентификаторов пользователей
+        Id = id;
+        Login = login;
+        PasswordHash = passwordHash;
+        Name = name;
+        Role = role;
+    }
+}
 
-        public UserGroup(string id, string name)
-        {
-            Id = id;
-            Name = name;
-            UserIds = new List<string>(); // Инициализация коллекции
-        }
+// Класс группы пользователей
+public class UserGroup
+{
+    public string Id { get; set; }
+    public string Name { get; set; }
+    public List<string> UserIds { get; set; } // Коллекция идентификаторов пользователей
 
-        public UserGroup(string id, string name, List<string> userIds)
-        {
-            Id = id;
-            Name = name;
-            UserIds = userIds;
-        }
+    public UserGroup()
+    {
+
+    }
+    public UserGroup(string id, string name)
+    {
+        Id = id;
+        Name = name;
+        UserIds = new List<string>(); // Инициализация коллекции
     }
 
-    // Класс рабочего места WorkPlace
-    public class WorkPlace
+    public UserGroup(string id, string name, List<string> userIds)
     {
-        public string Id { get; set; }
-        public string Name { get; set; }
-        public string IpAddress { get; set; }
-        public int Port { get; set; }
-
-        public WorkPlace(string id, string name, string ipAddress, int port)
-        {
-            Id = id;
-            Name = name;
-            IpAddress = ipAddress;
-            Port = port;
-        }
+        Id = id;
+        Name = name;
+        UserIds = userIds;
     }
+}
 
-    // Класс сессии
-    public class Session
+// Класс рабочего места WorkPlace
+public class WorkPlace
+{
+    public string Id { get; set; }
+    public string Name { get; set; }
+    public string IpAddress { get; set; }
+    public int Port { get; set; }
+
+    public WorkPlace(string id, string name, string ipAddress, int port)
     {
-        public string Id { get; set; }
-        public string UserId { get; set; }
-        public string IpAddress { get; set; }
-        public DateTime CreationTime { get; set; }
-        public DateTime ExpirationTime { get; set; }
-
-        public Session(string id, string userId, string ipAddress, DateTime creationTime, DateTime expirationTime)
-        {
-            Id = id;
-            UserId = userId;
-            IpAddress = ipAddress;
-            CreationTime = creationTime;
-            ExpirationTime = expirationTime;
-        }
+        Id = id;
+        Name = name;
+        IpAddress = ipAddress;
+        Port = port;
     }
+}
 
-    // Класс истории действий
-    public class ActionHistory
+// Класс сессии
+public class Session
+{
+    public string Id { get; set; }
+    public string UserId { get; set; }
+    public string IpAddress { get; set; }
+    public DateTime CreationTime { get; set; }
+    public DateTime ExpirationTime { get; set; }
+
+    public Session(string id, string userId, string ipAddress, DateTime creationTime, DateTime expirationTime)
     {
-        public string Id { get; set; }
-        public string UserId { get; set; }
-        public string Action { get; set; }
-        public DateTime Time { get; set; }
-
-        public ActionHistory(string id, string userId, string action, DateTime time)
-        {
-            Id = id;
-            UserId = userId;
-            Action = action;
-            Time = time;
-        }
+        Id = id;
+        UserId = userId;
+        IpAddress = ipAddress;
+        CreationTime = creationTime;
+        ExpirationTime = expirationTime;
     }
+}
 
-    // Класс для подключения к устройству
-    public class DeviceConnection
+// Класс истории действий
+public class ActionHistory
+{
+    public string Id { get; set; }
+    public string UserId { get; set; }
+    public string Action { get; set; }
+    public DateTime Time { get; set; }
+
+    public ActionHistory(string id, string userId, string action, DateTime time)
     {
-        public string Name { get; set; }
-        public string IpAddress { get; set; }
-        public int Port { get; set; }
-        public string UdpIdentifier { get; set; }
+        Id = id;
+        UserId = userId;
+        Action = action;
+        Time = time;
+    }
+}
 
-        public DeviceConnection(string name, string ipAddress, int port, string udpIdentifier)
-        {
-            Name = name;
-            IpAddress = ipAddress;
-            Port = port;
-            UdpIdentifier = udpIdentifier;
-        }
+// Класс для подключения к устройству
+public class DeviceConnection
+{
+    public string Name { get; set; }
+    public string IpAddress { get; set; }
+    public int Port { get; set; }
+    public string UdpIdentifier { get; set; }
+
+    public DeviceConnection(string name, string ipAddress, int port, string udpIdentifier)
+    {
+        Name = name;
+        IpAddress = ipAddress;
+        Port = port;
+        UdpIdentifier = udpIdentifier;
     }
 }
