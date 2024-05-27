@@ -28,6 +28,7 @@ namespace CSO
         }
         public Storage(string filePath)
         {
+
             Users = new List<User>();
             UserGroups = new List<UserGroup>();
             Sessions = new List<Session>();
@@ -67,34 +68,30 @@ namespace CSO
                 foreach (var str in strings)
                 {
                     HeaderNames.Add(str);
-                    HeaderString headerStringGet = new HeaderString(str);
+                    HeaderString TmpHeaderString = new HeaderString(str);
+                    string jsonObjectRead = ReadDataJson(TmpHeaderString);
 
-                    // PositionDictionary.Add(headerStringGet.Id, headerStringGet.startindex);
-                    byte[] dataBuffer = new byte[headerStringGet.Size];
-                    FileStream.Position = headerStringGet.startindex;
-                    FileStream.Read(dataBuffer, 0, headerStringGet.Size);
-
-                    switch (headerStringGet.Type)
+                    switch (TmpHeaderString.Type)
                     {
                         case "User":
 
-                            Users.Add(JsonSerializer.Deserialize<User>(Encoding.UTF8.GetString(dataBuffer)));
+                            Users.Add(JsonSerializer.Deserialize<User>(jsonObjectRead));
                             break;
                         case "UserGroup":
 
-                            UserGroups.Add(JsonSerializer.Deserialize<UserGroup>(Encoding.UTF8.GetString(dataBuffer)));
+                            UserGroups.Add(JsonSerializer.Deserialize<UserGroup>(jsonObjectRead));
                             break;
                         case "Session":
-                            Sessions.Add(JsonSerializer.Deserialize<Session>(Encoding.UTF8.GetString(dataBuffer)));
+                            Sessions.Add(JsonSerializer.Deserialize<Session>(jsonObjectRead));
                             break;
                         case "ActionHistory":
-                            ActionHistories.Add(JsonSerializer.Deserialize<ActionHistory>(Encoding.UTF8.GetString(dataBuffer)));
+                            ActionHistories.Add(JsonSerializer.Deserialize<ActionHistory>(jsonObjectRead));
                             break;
                         case "DeviceConnection":
-                            DeviceConnections.Add(JsonSerializer.Deserialize<DeviceConnection>(Encoding.UTF8.GetString(dataBuffer)));
+                            DeviceConnections.Add(JsonSerializer.Deserialize<DeviceConnection>(jsonObjectRead));
                             break;
                         case "WorkPlace":
-                            WorkPlaces.Add(JsonSerializer.Deserialize<WorkPlace>(Encoding.UTF8.GetString(dataBuffer)));
+                            WorkPlaces.Add(JsonSerializer.Deserialize<WorkPlace>(jsonObjectRead));
                             break;
                     }
                 }
@@ -112,6 +109,29 @@ namespace CSO
             }
         }
 
+        public string ReadDataJson(HeaderString GetStringHeader)
+        {
+            byte[] dataBuffer = new byte[GetStringHeader.Size];
+            FileStream.Position = GetStringHeader.startindex;
+            FileStream.Read(dataBuffer, 0, GetStringHeader.Size);
+            return Encoding.UTF8.GetString(dataBuffer);
+        }
+        public string ReadDataJson(string GetId)
+        {
+            for (int shag = 0; shag <= HeaderNames.Count - 1; shag++)
+            {
+                if (new HeaderString(HeaderNames[shag]).Id == GetId)
+                {
+                    HeaderString GetStringHeader = new HeaderString(HeaderNames[shag]);
+                    byte[] dataBuffer = new byte[GetStringHeader.Size];
+                    FileStream.Position = GetStringHeader.startindex;
+                    FileStream.Read(dataBuffer, 0, GetStringHeader.Size);
+                    return Encoding.UTF8.GetString(dataBuffer);
+                }
+            }
+            return null;
+
+        }
         public int GetNextFreePosition(int requiredSize)
         {
             if (HeaderNames.Count > 1)
@@ -143,13 +163,14 @@ namespace CSO
             switch (data)
             {
                 case User user:
+                    user.Id = GenerateUniqueId();
                     Users.Add(user);
                     byte[] userDataBytes = WriteBaseToJson(user);
                     int userPosition = GetNextFreePosition(userDataBytes.Length);
                     // PositionDictionary.Add(user.Id, userPosition);
 
-                    string userHeader = $"{typeof(User).Name} {user.Id} {userPosition} {userDataBytes.Length}" + ' ';
-                    System.Console.WriteLine(userHeader);
+                    string userHeader = typeof(User).Name + ' ' + user.Id + ' ' +  userPosition + ' ' + userDataBytes.Length  + ' ';
+                    
 
                     HeaderNames.Add(userHeader);
 
@@ -162,6 +183,7 @@ namespace CSO
                     break;
 
                 case UserGroup userGroup:
+                    userGroup.Id = GenerateUniqueId();
                     UserGroups.Add(userGroup);
                     byte[] userGroupDataBytes = WriteBaseToJson(userGroup);
                     int userGroupPosition = GetNextFreePosition(userGroupDataBytes.Length);
@@ -179,6 +201,7 @@ namespace CSO
                     break;
 
                 case Session session:
+                    session.Id = GenerateUniqueId();
                     Sessions.Add(session);
                     byte[] sessionDataBytes = WriteBaseToJson(session);
                     int sessionPosition = GetNextFreePosition(sessionDataBytes.Length);
@@ -195,6 +218,7 @@ namespace CSO
                     break;
 
                 case ActionHistory actionHistory:
+                    actionHistory.Id = GenerateUniqueId();
                     ActionHistories.Add(actionHistory);
                     byte[] actionHistoryDataBytes = WriteBaseToJson(actionHistory);
                     int actionHistoryPosition = GetNextFreePosition(actionHistoryDataBytes.Length);
@@ -211,6 +235,7 @@ namespace CSO
                     break;
 
                 case DeviceConnection deviceConnection:
+                
                     DeviceConnections.Add(deviceConnection);
                     byte[] deviceConnectionDataBytes = WriteBaseToJson(deviceConnection);
                     int deviceConnectionPosition = GetNextFreePosition(deviceConnectionDataBytes.Length);
@@ -289,13 +314,14 @@ namespace CSO
             }
             return sb;
         }
-        public async static void ReadCommand(string GetCommand)
+        public string ReadCommand(string GetCommand)
         {
             string[] DataWork = GetCommand.Split('\n');
             switch (DataWork[0])
             {
                 case "GET":
-                    break;
+                    string GetID = DataWork[1];
+                    return ReadDataJson(GetID);
                 case "SET":
                     break;
                 case "UPDATE":
@@ -303,54 +329,11 @@ namespace CSO
                 case "DEL":
                     break;
             }
-
-            
+            return null;
         }
     }
 }
 
-public class HeaderString
-{
-    public string Type { get; set; }
-    public string Id { get; set; }
-    public int startindex { get; set; }
-    public int Size { get; set; }
-    public HeaderString(string GetString)
-    {
-        string[] ReadData = GetString.Split(' ');
-        Type = ReadData[0];
-        Id = ReadData[1];
-        startindex = int.Parse(ReadData[2]);
-        Size = int.Parse(ReadData[3]);
-    }
-
-    public int GetSizeAndPosition()
-    {
-        return startindex + Size;
-    }
-
-}
-
-// Класс пользователя
-public class User
-{
-    public string Id { get; set; }
-    public string Login { get; set; }
-    public string PasswordHash { get; set; }
-    public string Name { get; set; }
-    public string Role { get; set; }
-
-    public User(string id, string login, string passwordHash, string name, string role)
-    {
-        Id = id;
-        Login = login;
-        PasswordHash = passwordHash;
-        Name = name;
-        Role = role;
-    }
-}
-
-// Класс группы пользователей
 public class UserGroup
 {
     public string Id { get; set; }
