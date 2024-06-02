@@ -1,3 +1,5 @@
+using System;
+
 namespace CSO
 {
     public class HeaderString
@@ -18,6 +20,11 @@ namespace CSO
         public int GetSizeAndPosition()
         {
             return startindex + Size;
+        }
+
+        public string GetString()
+        {
+            return Type + ' ' + Id + ' ' + startindex + ' ' + Size;
         }
 
     }

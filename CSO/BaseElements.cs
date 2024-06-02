@@ -108,7 +108,6 @@ namespace CSO
                 WriteBase(Group);
             }
         }
-
         public string ReadDataJson(HeaderString GetStringHeader)
         {
             byte[] dataBuffer = new byte[GetStringHeader.Size];
@@ -152,7 +151,6 @@ namespace CSO
             return HeaderSize;
 
         }
-
         public byte[] WriteBaseToJson<T>(T data)
         {
             var json = JsonSerializer.Serialize(data);
@@ -169,8 +167,8 @@ namespace CSO
                     int userPosition = GetNextFreePosition(userDataBytes.Length);
                     // PositionDictionary.Add(user.Id, userPosition);
 
-                    string userHeader = typeof(User).Name + ' ' + user.Id + ' ' +  userPosition + ' ' + userDataBytes.Length  + ' ';
-                    
+                    string userHeader = typeof(User).Name + ' ' + user.Id + ' ' + userPosition + ' ' + userDataBytes.Length + ' ';
+
 
                     HeaderNames.Add(userHeader);
 
@@ -235,7 +233,7 @@ namespace CSO
                     break;
 
                 case DeviceConnection deviceConnection:
-                
+
                     DeviceConnections.Add(deviceConnection);
                     byte[] deviceConnectionDataBytes = WriteBaseToJson(deviceConnection);
                     int deviceConnectionPosition = GetNextFreePosition(deviceConnectionDataBytes.Length);
@@ -288,7 +286,6 @@ namespace CSO
                 return stringBuilder.ToString();
             }
         }
-
         public static string GenerateUniqueId()
         {
             const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -317,13 +314,19 @@ namespace CSO
         public string ReadCommand(string GetCommand)
         {
             string[] DataWork = GetCommand.Split('\n');
+            string[] GetIDandType = DataWork[1].Split(' ');
             switch (DataWork[0])
             {
                 case "GET":
-                    string GetID = DataWork[1];
-                    return ReadDataJson(GetID);
+                    return ReadDataJson(GetIDandType[0]);
                 case "SET":
-                    break;
+                    var HeaderTemp = GetHeaderString(GetIDandType[0]);
+                    if (HeaderTemp != null)
+                    {
+                         
+                    }
+                    byte[] TmpWriteBytes = Encoding.UTF8.GetBytes(DataWork[2]);
+                    return SetData(HeaderTemp, TmpWriteBytes);
                 case "UPDATE":
                     break;
                 case "DEL":
@@ -331,100 +334,43 @@ namespace CSO
             }
             return null;
         }
+
+        public HeaderString GetHeaderString(string GetId)
+        {
+            if (HeaderNames.Count > 0)
+            {
+                return null;
+            }
+            else
+            {
+                for (int shag = 0; shag <= HeaderNames.Count - 1; shag++)
+                {
+                    var HeaderTemp = new HeaderString(HeaderNames[shag]);
+                    if (HeaderTemp.Id == GetId)
+                    {
+                        return HeaderTemp;
+                    }
+                }
+            }
+            return null;
+
+        }
+        public string SetData(HeaderString GetHeader, byte[] DataWrite)
+        {
+            if (GetHeader.Size <= DataWrite.Length)
+            {
+                FileStream.Position = GetHeader.startindex;
+                FileStream.Write(new ReadOnlySpan<byte>(DataWrite));
+            }
+            else
+            {
+                HeaderNames.Remove(GetHeader.GetString());
+                GetHeader.startindex = GetNextFreePosition(DataWrite.Length);
+                HeaderNames.Add(GetHeader.GetString());
+                // Записать данные 
+            }
+            return "ok";
+        }
     }
 }
 
-public class UserGroup
-{
-    public string Id { get; set; }
-    public string Name { get; set; }
-    public List<string> UserIds { get; set; } // Коллекция идентификаторов пользователей
-
-    public UserGroup()
-    {
-
-    }
-    public UserGroup(string id, string name)
-    {
-        Id = id;
-        Name = name;
-        UserIds = new List<string>(); // Инициализация коллекции
-    }
-
-    public UserGroup(string id, string name, List<string> userIds)
-    {
-        Id = id;
-        Name = name;
-        UserIds = userIds;
-    }
-}
-
-// Класс рабочего места WorkPlace
-public class WorkPlace
-{
-    public string Id { get; set; }
-    public string Name { get; set; }
-    public string IpAddress { get; set; }
-    public int Port { get; set; }
-
-    public WorkPlace(string id, string name, string ipAddress, int port)
-    {
-        Id = id;
-        Name = name;
-        IpAddress = ipAddress;
-        Port = port;
-    }
-}
-
-// Класс сессии
-public class Session
-{
-    public string Id { get; set; }
-    public string UserId { get; set; }
-    public string IpAddress { get; set; }
-    public DateTime CreationTime { get; set; }
-    public DateTime ExpirationTime { get; set; }
-
-    public Session(string id, string userId, string ipAddress, DateTime creationTime, DateTime expirationTime)
-    {
-        Id = id;
-        UserId = userId;
-        IpAddress = ipAddress;
-        CreationTime = creationTime;
-        ExpirationTime = expirationTime;
-    }
-}
-
-// Класс истории действий
-public class ActionHistory
-{
-    public string Id { get; set; }
-    public string UserId { get; set; }
-    public string Action { get; set; }
-    public DateTime Time { get; set; }
-
-    public ActionHistory(string id, string userId, string action, DateTime time)
-    {
-        Id = id;
-        UserId = userId;
-        Action = action;
-        Time = time;
-    }
-}
-
-// Класс для подключения к устройству
-public class DeviceConnection
-{
-    public string Name { get; set; }
-    public string IpAddress { get; set; }
-    public int Port { get; set; }
-    public string UdpIdentifier { get; set; }
-
-    public DeviceConnection(string name, string ipAddress, int port, string udpIdentifier)
-    {
-        Name = name;
-        IpAddress = ipAddress;
-        Port = port;
-        UdpIdentifier = udpIdentifier;
-    }
-}
