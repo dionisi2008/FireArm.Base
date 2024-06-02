@@ -28,7 +28,6 @@ namespace CSO
         }
         public Storage(string filePath)
         {
-
             Users = new List<User>();
             UserGroups = new List<UserGroup>();
             Sessions = new List<Session>();
@@ -67,18 +66,18 @@ namespace CSO
 
                 foreach (var str in strings)
                 {
-                    HeaderNames.Add(str);
+                    HeaderNames.Add(str.Split("\0")[0]);
                     HeaderString TmpHeaderString = new HeaderString(str);
                     string jsonObjectRead = ReadDataJson(TmpHeaderString);
 
                     switch (TmpHeaderString.Type)
                     {
                         case "User":
-
+                            Console.WriteLine(jsonObjectRead);
                             Users.Add(JsonSerializer.Deserialize<User>(jsonObjectRead));
                             break;
                         case "UserGroup":
-
+                            Console.WriteLine(jsonObjectRead);
                             UserGroups.Add(JsonSerializer.Deserialize<UserGroup>(jsonObjectRead));
                             break;
                         case "Session":
@@ -91,6 +90,7 @@ namespace CSO
                             DeviceConnections.Add(JsonSerializer.Deserialize<DeviceConnection>(jsonObjectRead));
                             break;
                         case "WorkPlace":
+                            Console.WriteLine(jsonObjectRead);
                             WorkPlaces.Add(JsonSerializer.Deserialize<WorkPlace>(jsonObjectRead));
                             break;
                     }
@@ -99,13 +99,30 @@ namespace CSO
 
             else
             {
-                string UserId = GenerateUniqueId();
-                string GroupId = GenerateUniqueId();
-                UserGroup Group = new UserGroup(GroupId, "Administrators");
-                Group.UserIds.Add(UserId);
-                User admin = new User(UserId, "Admin", CalculateSHA256("12345678"), "Administrator", GroupId);
-                WriteBase(admin);
-                WriteBase(Group);
+                FileStream.Write(new ReadOnlySpan<byte>(new byte[HeaderSize]));
+                FileStream.Flush();
+
+                User admin = new User();
+                admin.Name = "Administrator";
+                admin.Login = "Admin";
+                admin.PasswordHash = CalculateSHA256("12345678");
+                admin.Id = ReadCommand(new FireArm_API_Command("", "User", admin.GetBytes(), "SET"));
+
+
+                UserGroup TmpGroup = new UserGroup();
+                TmpGroup.Name = "Administrators";
+                TmpGroup.Id = ReadCommand(new FireArm_API_Command("", "UserGroup", TmpGroup.GetBytes(), "SET"));
+
+                TmpGroup.UserIds.Add(admin.Id);
+                admin.IDGroups.Add(TmpGroup.Id);
+
+                ReadCommand(new FireArm_API_Command(admin.Id, "User", admin.GetBytes(), "SET"));
+                ReadCommand(new FireArm_API_Command(TmpGroup.Id, "UserGroup", TmpGroup.GetBytes(), "SET"));
+
+                WorkPlace place1 = new WorkPlace("Server", "127.0.0.1", 8086);
+                place1.Id = ReadCommand(new FireArm_API_Command("", "WorkPlace", place1.GetBytes(), "SET"));
+                ReadCommand(new FireArm_API_Command(place1.Id, "WorkPlace", place1.GetBytes(), "SET"));
+
             }
         }
         public string ReadDataJson(HeaderString GetStringHeader)
@@ -133,9 +150,9 @@ namespace CSO
         }
         public int GetNextFreePosition(int requiredSize)
         {
-            if (HeaderNames.Count > 1)
+            if (HeaderNames.Count > 3)
             {
-                for (int shag = 0; shag <= HeaderNames.Count - 1; shag++)
+                for (int shag = 0; shag + 1 <= HeaderNames.Count - 1; shag++)
                 {
                     if ((new HeaderString(HeaderNames[shag + 1]).startindex - new HeaderString(HeaderNames[shag]).GetSizeAndPosition()) >= requiredSize)
                     {
@@ -147,6 +164,10 @@ namespace CSO
             else if (HeaderNames.Count == 1)
             {
                 return new HeaderString(HeaderNames[0]).GetSizeAndPosition();
+            }
+            else if (HeaderNames.Count == 2)
+            {
+                return new HeaderString(HeaderNames[1]).GetSizeAndPosition();
             }
             return HeaderSize;
 
@@ -311,25 +332,36 @@ namespace CSO
             }
             return sb;
         }
-        public string ReadCommand(string GetCommand)
+        public string ReadCommand(FireArm_API_Command GetCommnad)
         {
-            string[] DataWork = GetCommand.Split('\n');
-            string[] GetIDandType = DataWork[1].Split(' ');
-            switch (DataWork[0])
+            switch (GetCommnad.Metode)
             {
                 case "GET":
-                    return ReadDataJson(GetIDandType[0]);
+                    return ReadDataJson(GetCommnad.ID);
                 case "SET":
-                    var HeaderTemp = GetHeaderString(GetIDandType[0]);
-                    if (HeaderTemp != null)
+                    var HeaderTemp = GetHeaderString(GetCommnad.ID);
+                    if (HeaderTemp == null)
                     {
-                         
+                        HeaderTemp = new HeaderString();
+                        HeaderTemp.Id = GenerateUniqueId();
+                        HeaderTemp.startindex = (int)FileStream.Length + 1;
+                        HeaderTemp.Type = GetCommnad.Type;
+                        HeaderTemp.Size = GetCommnad.BytesWrite.Length;
+                        HeaderNames.Add(HeaderTemp.GetString());
+                        SetData(HeaderTemp, GetCommnad.BytesWrite);
+                        return HeaderTemp.Id;
                     }
-                    byte[] TmpWriteBytes = Encoding.UTF8.GetBytes(DataWork[2]);
-                    return SetData(HeaderTemp, TmpWriteBytes);
-                case "UPDATE":
-                    break;
+                    // else
+                    // {
+                    //     HeaderTemp.Size = GetCommnad.BytesWrite.Length;
+                    // }
+                    return SetData(HeaderTemp, GetCommnad.BytesWrite);
                 case "DEL":
+                    var HeaderTemp2 = GetHeaderString(GetCommnad.ID);
+                    if (HeaderTemp2 != null)
+                    {
+                        HeaderNames.Remove(GetCommnad.ID);
+                    }
                     break;
             }
             return null;
@@ -337,7 +369,7 @@ namespace CSO
 
         public HeaderString GetHeaderString(string GetId)
         {
-            if (HeaderNames.Count > 0)
+            if (HeaderNames.Count == 0)
             {
                 return null;
             }
@@ -357,7 +389,9 @@ namespace CSO
         }
         public string SetData(HeaderString GetHeader, byte[] DataWrite)
         {
-            if (GetHeader.Size <= DataWrite.Length)
+
+
+            if (GetHeader.Size >= DataWrite.Length)
             {
                 FileStream.Position = GetHeader.startindex;
                 FileStream.Write(new ReadOnlySpan<byte>(DataWrite));
@@ -366,9 +400,14 @@ namespace CSO
             {
                 HeaderNames.Remove(GetHeader.GetString());
                 GetHeader.startindex = GetNextFreePosition(DataWrite.Length);
+                GetHeader.Size = DataWrite.Length;
                 HeaderNames.Add(GetHeader.GetString());
-                // Записать данные 
+                FileStream.Position = GetHeader.startindex;
+                FileStream.Write(new ReadOnlySpan<byte>(DataWrite));
             }
+            FileStream.Position = 0;
+            FileStream.Write(new ReadOnlySpan<byte>(Encoding.UTF8.GetBytes(string.Join('\n', HeaderNames.ToArray()))));
+            FileStream.Flush();
             return "ok";
         }
     }

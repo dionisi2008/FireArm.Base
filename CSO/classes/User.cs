@@ -1,22 +1,25 @@
+using System.Text;
+
 namespace CSO
 {
-    
-public class User
-{
-    public string Id { get; set; }
-    public string Login { get; set; }
-    public string PasswordHash { get; set; }
-    public string Name { get; set; }
-    public string Role { get; set; }
 
-    public User(string id, string login, string passwordHash, string name, string role)
+    public class User
     {
-        Id = id;
-        Login = login;
-        PasswordHash = passwordHash;
-        Name = name;
-        Role = role;
+        public string Id { get; set; }
+        public string Login { get; set; }
+        public string PasswordHash { get; set; }
+        public string Name { get; set; }
+        public List<string> IDGroups { get; set; }
+
+        public User()
+        {
+            IDGroups = new List<string>();
+        }
+
+        public byte[] GetBytes()
+        {
+            return Encoding.UTF8.GetBytes(System.Text.Json.JsonSerializer.Serialize(this));
+        }
     }
-}
 
 }

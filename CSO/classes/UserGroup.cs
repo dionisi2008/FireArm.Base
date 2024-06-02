@@ -1,4 +1,5 @@
 using System;
+using System.Text;
 
 namespace CSO
 {
@@ -10,7 +11,7 @@ namespace CSO
 
         public UserGroup()
         {
-
+            UserIds = new List<string>();
         }
         public UserGroup(string id, string name)
         {
@@ -24,6 +25,11 @@ namespace CSO
             Id = id;
             Name = name;
             UserIds = userIds;
+        }
+
+        public byte[] GetBytes()
+        {
+            return Encoding.UTF8.GetBytes(System.Text.Json.JsonSerializer.Serialize(this));
         }
     }
 }

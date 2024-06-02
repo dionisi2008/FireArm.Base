@@ -17,6 +17,11 @@ namespace CSO
             Size = int.Parse(ReadData[3]);
         }
 
+        public HeaderString()
+        {
+
+        }
+
         public int GetSizeAndPosition()
         {
             return startindex + Size;
