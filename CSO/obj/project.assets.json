@@ -14,11 +14,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\Денис\\FireArm.Base\\CSO\\CSO.csproj",
+      "projectUniqueName": "C:\\Users\\Денис\\Documents\\GitHub\\FireArm.Base\\CSO\\CSO.csproj",
       "projectName": "CSO",
-      "projectPath": "C:\\Users\\Денис\\FireArm.Base\\CSO\\CSO.csproj",
+      "projectPath": "C:\\Users\\Денис\\Documents\\GitHub\\FireArm.Base\\CSO\\CSO.csproj",
       "packagesPath": "C:\\Users\\Денис\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\Денис\\FireArm.Base\\CSO\\obj\\",
+      "outputPath": "C:\\Users\\Денис\\Documents\\GitHub\\FireArm.Base\\CSO\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
