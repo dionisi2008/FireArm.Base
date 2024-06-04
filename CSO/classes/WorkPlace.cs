@@ -7,6 +7,10 @@ public class WorkPlace
     public string IpAddress { get; set; }
     public int Port { get; set; }
 
+    public WorkPlace()
+    {
+
+    }
     public WorkPlace(string id, string name, string ipAddress, int port)
     {
         Id = id;

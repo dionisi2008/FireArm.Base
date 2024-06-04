@@ -18,9 +18,8 @@ namespace CSO
         public List<DeviceConnection> DeviceConnections { get; set; } // Список подключений к устройствам
         public List<WorkPlace> WorkPlaces { get; set; } // Список рабочих мест
         public Stream FileStream { get; set; } // Переменная типа Stream для работы с файлом
-
         public byte[] Header { get; set; } // Массив байт для хранения заголовка
-        public static List<string> HeaderNames { get; set; } // Список имен заголовков
+        public static List<HeaderString> HeaderNames { get; set; } // Список имен заголовков
         // public static Dictionary<string, int> PositionDictionary { get; set; } // Словарь для хранения идентификаторов и позиций
         public Storage() : this("default_filename.txt")
         {
@@ -34,7 +33,7 @@ namespace CSO
             ActionHistories = new List<ActionHistory>();
             DeviceConnections = new List<DeviceConnection>();
             WorkPlaces = new List<WorkPlace>();
-            HeaderNames = new List<string>();
+            HeaderNames = new List<HeaderString>();
             // PositionDictionary = new Dictionary<string, int>();
             if (File.Exists(filePath))
             {
@@ -66,7 +65,7 @@ namespace CSO
 
                 foreach (var str in strings)
                 {
-                    HeaderNames.Add(str.Split("\0")[0]);
+                    HeaderNames.Add(new HeaderString(str.Split("\0")[0]));
                     HeaderString TmpHeaderString = new HeaderString(str);
                     string jsonObjectRead = ReadDataJson(TmpHeaderString);
 
@@ -90,7 +89,6 @@ namespace CSO
                             DeviceConnections.Add(JsonSerializer.Deserialize<DeviceConnection>(jsonObjectRead));
                             break;
                         case "WorkPlace":
-                            Console.WriteLine(jsonObjectRead);
                             WorkPlaces.Add(JsonSerializer.Deserialize<WorkPlace>(jsonObjectRead));
                             break;
                     }
@@ -136,9 +134,9 @@ namespace CSO
         {
             for (int shag = 0; shag <= HeaderNames.Count - 1; shag++)
             {
-                if (new HeaderString(HeaderNames[shag]).Id == GetId)
+                if (HeaderNames[shag].Id == GetId)
                 {
-                    HeaderString GetStringHeader = new HeaderString(HeaderNames[shag]);
+                    HeaderString GetStringHeader = HeaderNames[shag];
                     byte[] dataBuffer = new byte[GetStringHeader.Size];
                     FileStream.Position = GetStringHeader.startindex;
                     FileStream.Read(dataBuffer, 0, GetStringHeader.Size);
@@ -154,20 +152,20 @@ namespace CSO
             {
                 for (int shag = 0; shag + 1 <= HeaderNames.Count - 1; shag++)
                 {
-                    if ((new HeaderString(HeaderNames[shag + 1]).startindex - new HeaderString(HeaderNames[shag]).GetSizeAndPosition()) >= requiredSize)
+                    if (HeaderNames[shag + 1].startindex - HeaderNames[shag].GetSizeAndPosition() >= requiredSize)
                     {
-                        return new HeaderString(HeaderNames[shag]).GetSizeAndPosition();
+                        return HeaderNames[shag].GetSizeAndPosition();
                     }
                 }
-                return new HeaderString(HeaderNames[HeaderNames.Count]).GetSizeAndPosition();
+                return HeaderNames[HeaderNames.Count].GetSizeAndPosition();
             }
             else if (HeaderNames.Count == 1)
             {
-                return new HeaderString(HeaderNames[0]).GetSizeAndPosition();
+                return HeaderNames[0].GetSizeAndPosition();
             }
             else if (HeaderNames.Count == 2)
             {
-                return new HeaderString(HeaderNames[1]).GetSizeAndPosition();
+                return HeaderNames[1].GetSizeAndPosition();
             }
             return HeaderSize;
 
@@ -177,120 +175,124 @@ namespace CSO
             var json = JsonSerializer.Serialize(data);
             return Encoding.UTF8.GetBytes(json);
         }
-        public void WriteBase<T>(T data)
-        {
-            switch (data)
-            {
-                case User user:
-                    user.Id = GenerateUniqueId();
-                    Users.Add(user);
-                    byte[] userDataBytes = WriteBaseToJson(user);
-                    int userPosition = GetNextFreePosition(userDataBytes.Length);
-                    // PositionDictionary.Add(user.Id, userPosition);
+        // public void WriteBase<T>(T data)
+        // {
+        //     switch (data)
+        //     {
+        //         case User user:
+        //             user.Id = GenerateUniqueId();
+        //             Users.Add(user);
+        //             byte[] userDataBytes = WriteBaseToJson(user);
+        //             int userPosition = GetNextFreePosition(userDataBytes.Length);
+        //             // PositionDictionary.Add(user.Id, userPosition);
+        //             var tmpheader = new HeaderString();
+        //             tmpheader.Type = "User";
+        //             tmpheader.Id = user.Id;
+        //             tmpheader.Id = user.Id;
+        //             HeaderNames.Add(new HeaderString("User" + ' ' + user.Id + ' ' + userPosition + ' ' + userDataBytes.Length + ' '));
 
-                    string userHeader = typeof(User).Name + ' ' + user.Id + ' ' + userPosition + ' ' + userDataBytes.Length + ' ';
 
+        //             userHeader);
 
-                    HeaderNames.Add(userHeader);
+        //             FileStream.Position = userPosition;
+        //             FileStream.Write(userDataBytes);
 
-                    FileStream.Position = userPosition;
-                    FileStream.Write(userDataBytes);
+        //             FileStream.Position = 0;
+        //             FileStream.Write(Encoding.UTF8.GetBytes(string.Join("\n", HeaderNames)));
 
-                    FileStream.Position = 0;
-                    FileStream.Write(Encoding.UTF8.GetBytes(string.Join("\n", HeaderNames)));
+        //             break;
 
-                    break;
+        //         case UserGroup userGroup:
+        //             userGroup.Id = GenerateUniqueId();
+        //             UserGroups.Add(userGroup);
+        //             byte[] userGroupDataBytes = WriteBaseToJson(userGroup);
+        //             int userGroupPosition = GetNextFreePosition(userGroupDataBytes.Length);
+        //             // PositionDictionary.Add(userGroup.Id, userGroupPosition);
 
-                case UserGroup userGroup:
-                    userGroup.Id = GenerateUniqueId();
-                    UserGroups.Add(userGroup);
-                    byte[] userGroupDataBytes = WriteBaseToJson(userGroup);
-                    int userGroupPosition = GetNextFreePosition(userGroupDataBytes.Length);
-                    // PositionDictionary.Add(userGroup.Id, userGroupPosition);
+        //             string groupHeader = $"{typeof(UserGroup).Name} {userGroup.Id} {userGroupPosition} {userGroupDataBytes.Length}" + ' ';
 
-                    string groupHeader = $"{typeof(UserGroup).Name} {userGroup.Id} {userGroupPosition} {userGroupDataBytes.Length}" + ' ';
+        //             HeaderNames.Add(groupHeader);
 
-                    HeaderNames.Add(groupHeader);
+        //             FileStream.Position = userGroupPosition;
+        //             FileStream.Write(userGroupDataBytes);
 
-                    FileStream.Position = userGroupPosition;
-                    FileStream.Write(userGroupDataBytes);
+        //             FileStream.Position = 0;
+        //             FileStream.Write(Encoding.UTF8.GetBytes(string.Join("\n", HeaderNames)));
+        //             break;
 
-                    FileStream.Position = 0;
-                    FileStream.Write(Encoding.UTF8.GetBytes(string.Join("\n", HeaderNames)));
-                    break;
+        //         case Session session:
+        //             session.Id = GenerateUniqueId();
+        //             Sessions.Add(session);
+        //             byte[] sessionDataBytes = WriteBaseToJson(session);
+        //             int sessionPosition = GetNextFreePosition(sessionDataBytes.Length);
+        //             // PositionDictionary.Add(session.Id, sessionPosition);
 
-                case Session session:
-                    session.Id = GenerateUniqueId();
-                    Sessions.Add(session);
-                    byte[] sessionDataBytes = WriteBaseToJson(session);
-                    int sessionPosition = GetNextFreePosition(sessionDataBytes.Length);
-                    // PositionDictionary.Add(session.Id, sessionPosition);
+        //             string sessionHeader = $"{typeof(Session).Name} {session.Id} {sessionPosition} {sessionDataBytes.Length}" + ' ';
+        //             HeaderNames.Add(sessionHeader);
 
-                    string sessionHeader = $"{typeof(Session).Name} {session.Id} {sessionPosition} {sessionDataBytes.Length}" + ' ';
-                    HeaderNames.Add(sessionHeader);
+        //             FileStream.Position = sessionPosition;
+        //             FileStream.Write(sessionDataBytes);
 
-                    FileStream.Position = sessionPosition;
-                    FileStream.Write(sessionDataBytes);
+        //             FileStream.Position = 0;
+        //             FileStream.Write(Encoding.UTF8.GetBytes(string.Join("\n", HeaderNames)));
+        //             break;
 
-                    FileStream.Position = 0;
-                    FileStream.Write(Encoding.UTF8.GetBytes(string.Join("\n", HeaderNames)));
-                    break;
+        //         case ActionHistory actionHistory:
+        //             actionHistory.Id = GenerateUniqueId();
+        //             ActionHistories.Add(actionHistory);
+        //             byte[] actionHistoryDataBytes = WriteBaseToJson(actionHistory);
+        //             int actionHistoryPosition = GetNextFreePosition(actionHistoryDataBytes.Length);
+        //             // PositionDictionary.Add(actionHistory.Id, actionHistoryPosition);
 
-                case ActionHistory actionHistory:
-                    actionHistory.Id = GenerateUniqueId();
-                    ActionHistories.Add(actionHistory);
-                    byte[] actionHistoryDataBytes = WriteBaseToJson(actionHistory);
-                    int actionHistoryPosition = GetNextFreePosition(actionHistoryDataBytes.Length);
-                    // PositionDictionary.Add(actionHistory.Id, actionHistoryPosition);
+        //             string actionHistoryHeader = $"{typeof(ActionHistory).Name} {actionHistory.Id} {actionHistoryPosition} {actionHistoryDataBytes.Length}" + ' ';
+        //             HeaderNames.Add(actionHistoryHeader);
 
-                    string actionHistoryHeader = $"{typeof(ActionHistory).Name} {actionHistory.Id} {actionHistoryPosition} {actionHistoryDataBytes.Length}" + ' ';
-                    HeaderNames.Add(actionHistoryHeader);
+        //             FileStream.Position = actionHistoryPosition;
+        //             FileStream.Write(actionHistoryDataBytes);
 
-                    FileStream.Position = actionHistoryPosition;
-                    FileStream.Write(actionHistoryDataBytes);
+        //             FileStream.Position = 0;
+        //             FileStream.Write(Encoding.UTF8.GetBytes(string.Join("\n", HeaderNames)));
+        //             break;
 
-                    FileStream.Position = 0;
-                    FileStream.Write(Encoding.UTF8.GetBytes(string.Join("\n", HeaderNames)));
-                    break;
+        //         case DeviceConnection deviceConnection:
 
-                case DeviceConnection deviceConnection:
+        //             DeviceConnections.Add(deviceConnection);
+        //             byte[] deviceConnectionDataBytes = WriteBaseToJson(deviceConnection);
+        //             int deviceConnectionPosition = GetNextFreePosition(deviceConnectionDataBytes.Length);
+        //             // PositionDictionary.Add(deviceConnection.Name, deviceConnectionPosition);
 
-                    DeviceConnections.Add(deviceConnection);
-                    byte[] deviceConnectionDataBytes = WriteBaseToJson(deviceConnection);
-                    int deviceConnectionPosition = GetNextFreePosition(deviceConnectionDataBytes.Length);
-                    // PositionDictionary.Add(deviceConnection.Name, deviceConnectionPosition);
+        //             string deviceConnectionHeader = $"{typeof(DeviceConnection).Name} {deviceConnection.Name} {deviceConnectionPosition} {deviceConnectionDataBytes.Length}" + ' ';
+        //             HeaderNames.Add(deviceConnectionHeader);
 
-                    string deviceConnectionHeader = $"{typeof(DeviceConnection).Name} {deviceConnection.Name} {deviceConnectionPosition} {deviceConnectionDataBytes.Length}" + ' ';
-                    HeaderNames.Add(deviceConnectionHeader);
+        //             FileStream.Position = deviceConnectionPosition;
+        //             FileStream.Write(deviceConnectionDataBytes);
 
-                    FileStream.Position = deviceConnectionPosition;
-                    FileStream.Write(deviceConnectionDataBytes);
+        //             FileStream.Position = 0;
+        //             FileStream.Write(Encoding.UTF8.GetBytes(string.Join("\n", HeaderNames)));
+        //             break;
 
-                    FileStream.Position = 0;
-                    FileStream.Write(Encoding.UTF8.GetBytes(string.Join("\n", HeaderNames)));
-                    break;
+        //         case WorkPlace workPlace:
+        //             WorkPlaces.Add(workPlace);
+        //             byte[] workPlaceDataBytes = WriteBaseToJson(workPlace);
+        //             int workPlacePosition = GetNextFreePosition(workPlaceDataBytes.Length);
+        //             // PositionDictionary.Add(workPlace.Id, workPlacePosition);
 
-                case WorkPlace workPlace:
-                    WorkPlaces.Add(workPlace);
-                    byte[] workPlaceDataBytes = WriteBaseToJson(workPlace);
-                    int workPlacePosition = GetNextFreePosition(workPlaceDataBytes.Length);
-                    // PositionDictionary.Add(workPlace.Id, workPlacePosition);
+        //             string workPlaceHeader = $"{typeof(WorkPlace).Name} {workPlace.Id} {workPlacePosition} {workPlaceDataBytes.Length}" + ' ';
+        //             HeaderNames.Add(workPlaceHeader);
 
-                    string workPlaceHeader = $"{typeof(WorkPlace).Name} {workPlace.Id} {workPlacePosition} {workPlaceDataBytes.Length}" + ' ';
-                    HeaderNames.Add(workPlaceHeader);
+        //             FileStream.Position = workPlacePosition;
+        //             FileStream.Write(workPlaceDataBytes);
 
-                    FileStream.Position = workPlacePosition;
-                    FileStream.Write(workPlaceDataBytes);
+        //             FileStream.Position = 0;
+        //             FileStream.Write(Encoding.UTF8.GetBytes(string.Join("\n", HeaderNames)));
+        //             break;
 
-                    FileStream.Position = 0;
-                    FileStream.Write(Encoding.UTF8.GetBytes(string.Join("\n", HeaderNames)));
-                    break;
+        //         default:
+        //             throw new ArgumentException("Unsupported type.");
+        //     }
+        //     FileStream.Flush();
+        // }
 
-                default:
-                    throw new ArgumentException("Unsupported type.");
-            }
-            FileStream.Flush();
-        }
         public static string CalculateSHA256(string input)
         {
             using (SHA256 sha256 = SHA256.Create())
@@ -320,7 +322,7 @@ namespace CSO
             {
                 for (int shag = 0; shag <= HeaderNames.Count - 1; shag++)
                 {
-                    if (new HeaderString(HeaderNames[shag]).Id == sb)
+                    if (HeaderNames[shag].Id == sb)
                     {
                         sb = "";
                         for (int i = 0; i < 16; i++)
@@ -347,7 +349,7 @@ namespace CSO
                         HeaderTemp.startindex = (int)FileStream.Length + 1;
                         HeaderTemp.Type = GetCommnad.Type;
                         HeaderTemp.Size = GetCommnad.BytesWrite.Length;
-                        HeaderNames.Add(HeaderTemp.GetString());
+                        HeaderNames.Add(HeaderTemp);
                         SetData(HeaderTemp, GetCommnad.BytesWrite);
                         return HeaderTemp.Id;
                     }
@@ -357,16 +359,24 @@ namespace CSO
                     // }
                     return SetData(HeaderTemp, GetCommnad.BytesWrite);
                 case "DEL":
-                    var HeaderTemp2 = GetHeaderString(GetCommnad.ID);
-                    if (HeaderTemp2 != null)
-                    {
-                        HeaderNames.Remove(GetCommnad.ID);
-                    }
-                    break;
+                    return DelHeader(GetCommnad.ID).ToString();
+
             }
             return null;
         }
 
+        public bool DelHeader(string GetId)
+        {
+            for (int shag = 0; shag <= HeaderNames.Count - 1; shag++)
+            {
+                if (HeaderNames[shag].Id == GetId)
+                {
+                    HeaderNames.RemoveRange(shag, 1);
+                    return true;
+                }
+            }
+            return false;
+        }
         public HeaderString GetHeaderString(string GetId)
         {
             if (HeaderNames.Count == 0)
@@ -377,15 +387,24 @@ namespace CSO
             {
                 for (int shag = 0; shag <= HeaderNames.Count - 1; shag++)
                 {
-                    var HeaderTemp = new HeaderString(HeaderNames[shag]);
-                    if (HeaderTemp.Id == GetId)
+                    if (HeaderNames[shag].Id == GetId)
                     {
-                        return HeaderTemp;
+                        return HeaderNames[shag];
                     }
                 }
             }
             return null;
 
+        }
+
+        public byte[] GetBytesHeader()
+        {
+            List<string> listStringsConver = new List<string>();
+            for (int shag = 0; shag <= HeaderNames.Count - 1; shag++)
+            {
+                listStringsConver.Add(HeaderNames[shag].GetString());
+            }
+            return Encoding.UTF8.GetBytes(string.Join('\n', listStringsConver.ToArray()));
         }
         public string SetData(HeaderString GetHeader, byte[] DataWrite)
         {
@@ -398,15 +417,15 @@ namespace CSO
             }
             else
             {
-                HeaderNames.Remove(GetHeader.GetString());
+                DelHeader(GetHeader.Id);
                 GetHeader.startindex = GetNextFreePosition(DataWrite.Length);
                 GetHeader.Size = DataWrite.Length;
-                HeaderNames.Add(GetHeader.GetString());
+                HeaderNames.Add(GetHeader);
                 FileStream.Position = GetHeader.startindex;
                 FileStream.Write(new ReadOnlySpan<byte>(DataWrite));
             }
             FileStream.Position = 0;
-            FileStream.Write(new ReadOnlySpan<byte>(Encoding.UTF8.GetBytes(string.Join('\n', HeaderNames.ToArray()))));
+            FileStream.Write(new ReadOnlySpan<byte>(GetBytesHeader()));
             FileStream.Flush();
             return "ok";
         }
