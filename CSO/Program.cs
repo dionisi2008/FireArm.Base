@@ -11,8 +11,6 @@ namespace CSO // Note: actual namespace depends on the project name.
             Console.WriteLine("Hello, World!");
             var test1 = new Storage();
             
-            var t = "sd";
-            
             test1.FileStream.Close();
             
             //File.Delete("default_filename.txt");
