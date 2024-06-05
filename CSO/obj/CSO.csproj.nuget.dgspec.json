@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "c:\\Users\\Денис\\Documents\\GitHub\\FireArm.Base\\CSO\\CSO.csproj": {}
+    "C:\\Users\\Денис\\Documents\\GitHub\\FireArm.Base\\CSO\\CSO.csproj": {}
   },
   "projects": {
-    "c:\\Users\\Денис\\Documents\\GitHub\\FireArm.Base\\CSO\\CSO.csproj": {
+    "C:\\Users\\Денис\\Documents\\GitHub\\FireArm.Base\\CSO\\CSO.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "c:\\Users\\Денис\\Documents\\GitHub\\FireArm.Base\\CSO\\CSO.csproj",
+        "projectUniqueName": "C:\\Users\\Денис\\Documents\\GitHub\\FireArm.Base\\CSO\\CSO.csproj",
         "projectName": "CSO",
-        "projectPath": "c:\\Users\\Денис\\Documents\\GitHub\\FireArm.Base\\CSO\\CSO.csproj",
+        "projectPath": "C:\\Users\\Денис\\Documents\\GitHub\\FireArm.Base\\CSO\\CSO.csproj",
         "packagesPath": "C:\\Users\\Денис\\.nuget\\packages\\",
-        "outputPath": "c:\\Users\\Денис\\Documents\\GitHub\\FireArm.Base\\CSO\\obj\\",
+        "outputPath": "C:\\Users\\Денис\\Documents\\GitHub\\FireArm.Base\\CSO\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
