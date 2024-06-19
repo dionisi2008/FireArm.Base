@@ -1,29 +1,19 @@
-using System.Text.Json;
-using System.Net;
+using System.Net.WebSockets;
 using System.Text;
 
 namespace CSO
 {
 
-    //ПЕРЕПИСАТЬ ЛОГИКУ!!!!!!
     public class FireArm_API_Client
     {
-        public string IPServer { get; set; }
-        public int PORTServer { get; set; }
-        public System.Net.HttpListener ServerListener;
-        public FireArm_API_Client(string GetIp, int GetPort)
+        public string WSURL;
+        public ClientWebSocket WSClient;
+        public FireArm_API_Client(string GetWSURL)
         {
-            this.IPServer = GetIp;
-            this.PORTServer = GetPort;
-            ServerListener = new HttpListener();
-            ServerListener.Prefixes.Add("http://*:" + GetPort + "/");
-            ServerListener.Start();
-            do
-            {
-                GetWebSocket(ServerListener.GetContextAsync().Result.AcceptWebSocketAsync("").Result.WebSocket);
-            } while (ServerListener.IsListening);
+            WSClient.ConnectAsync(new Uri(GetWSURL), CancellationToken.None);
+            
         }
-        public void GetWebSocket(System.Net.WebSockets.WebSocket GetContext)
+        public void GetWebSocket(WebSocket GetContext)
         {
             string GetInfo = "";
             ArraySegment<byte> test = new ArraySegment<byte>();
