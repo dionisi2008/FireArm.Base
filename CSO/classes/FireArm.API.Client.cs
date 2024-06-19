@@ -19,7 +19,6 @@ namespace CSO
             ArraySegment<byte> test = new ArraySegment<byte>();
             GetContext.ReceiveAsync(test, CancellationToken.None);
             GetInfo = Encoding.UTF8.GetString(test.ToArray());
-
         }
 
     }

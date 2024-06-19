@@ -16,10 +16,18 @@ namespace CSO
             ServerListener = new HttpListener();
             ServerListener.Prefixes.Add("http://*:" + GetPort + "/");
             ServerListener.Start();
+            StartServer(ServerListener);
+        }
+
+        public async static void StartServer(HttpListener GetServer)
+        {
             do
             {
-                GetWebSocket(ServerListener.GetContextAsync().Result.AcceptWebSocketAsync("").Result.WebSocket);
-            } while (ServerListener.IsListening);
+                var context = await GetServer.GetContextAsync();
+                var ws = await context.AcceptWebSocketAsync("");
+                GetWebSocket(ws.WebSocket);
+
+            } while (GetServer.IsListening);
         }
         public async static void GetWebSocket(System.Net.WebSockets.WebSocket GetContext)
         {
