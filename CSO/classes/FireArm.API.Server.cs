@@ -14,7 +14,7 @@ namespace CSO
             this.IPServer = GetIp;
             this.PORTServer = GetPort;
             ServerListener = new HttpListener();
-            ServerListener.Prefixes.Add("http://*:" + GetPort + "/");
+            ServerListener.Prefixes.Add("http://:" +  GetPort + '/');
             ServerListener.Start();
             StartServer(ServerListener);
         }
